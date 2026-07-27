@@ -1,72 +1,82 @@
 import type { Request, Response } from "express";
+import { ObjectId } from "mongodb";
+import * as userService from "../services/users.service.ts";
 
-type User = {
-  id: number;
-  name: string;
-  address: string;
-};
-
-const users: User[] = [
-  {
-    id: 1,
-    name: "A gờ",
-    address: "add",
-  },
-];
-
-export const getUsers = (req: Request, res: Response) => {
+export const getUsers = async (req: Request, res: Response) => {
+  const users = await userService.getUsers();
   res.json(users);
 };
 
-export const getUsersById = (req: Request, res: Response) => {
-  const id = req.params.id;
+export const getUsersById = async (
+  req: Request<{ id: string }>,
+  res: Response,
+) => {
+  const { id } = req.params;
 
-  const user = users.find((u) => u.id === Number(id));
-  if (!user) {
-    res.status(404).json({ message: "User not found" });
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({
+      message: "Invalid user id",
+    });
   }
+
+  const user = await userService.getUserById(id);
+
+  if (!user) {
+    return res.status(404).json({
+      message: "User not found",
+    });
+  }
+
   res.json(user);
 };
 
-export const createUser = (req: Request, res: Response) => {
-  const { id, ...rest } = req.body;
-
-  const newUser = {
-    id: users.length + 1,
-    ...rest,
-  };
-
-  users.push(newUser);
-  res.status(201).json(newUser);
+export const createUser = async (req: Request, res: Response) => {
+  const user = await userService.createUser(req.body);
+  res.status(201).json(user);
 };
 
-export const updateUser = (req: Request, res: Response) => {
-  const id = req.params.id;
+export const updateUser = async (
+  req: Request<{ id: string }>,
+  res: Response,
+) => {
+  const { id } = req.params;
 
-  const index = users.findIndex((u) => u.id === Number(id));
-
-  if (index === -1) {
-    res.status(404).json({ message: "User not found" });
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({
+      message: "Invalid user id",
+    });
   }
 
-  users[index] = {
-    id: Number(id),
-    name: req.body.name,
-    address: req.body.address,
-  };
+  const user = await userService.updateUser(id, req.body);
 
-  res.json(users[index]);
+  if (!user) {
+    return res.status(404).json({
+      message: "User not found",
+    });
+  }
+
+  res.json(user);
 };
 
-export const delelteUser = (req: Request, res: Response) => {
-  const id = req.params.id;
+export const deleteUser = async (
+  req: Request<{ id: string }>,
+  res: Response,
+) => {
+  const { id } = req.params;
 
-  const index = users.findIndex((u) => u.id === Number(id));
-
-  if (index === -1) {
-    res.status(404).json({ message: "User not found" });
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({
+      message: "Invalid user id",
+    });
   }
 
-  users.splice(index, 1);
+  const result = await userService.deleteUser(id);
+
+  if (result.deletedCount === 0) {
+    return res.status(404).json({
+      message: "User not found",
+    });
+  }
+
   res.status(204).send();
 };
