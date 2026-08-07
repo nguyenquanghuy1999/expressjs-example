@@ -1,13 +1,13 @@
 import type { Request, Response } from "express";
 import { ObjectId } from "mongodb";
-import * as userService from "../services/users.service.ts";
+import * as usersService from "../services/users.service.ts";
 
 export const getUsers = async (req: Request, res: Response) => {
-  const users = await userService.getUsers();
+  const users = await usersService.getUsers();
   res.json(users);
 };
 
-export const getUsersById = async (
+export const getUserById = async (
   req: Request<{ id: string }>,
   res: Response,
 ) => {
@@ -19,7 +19,7 @@ export const getUsersById = async (
     });
   }
 
-  const user = await userService.getUserById(id);
+  const user = await usersService.getUserById(id);
 
   if (!user) {
     return res.status(404).json({
@@ -31,7 +31,7 @@ export const getUsersById = async (
 };
 
 export const createUser = async (req: Request, res: Response) => {
-  const user = await userService.createUser(req.body);
+  const user = await usersService.createUser(req.body);
   res.status(201).json(user);
 };
 
@@ -47,7 +47,7 @@ export const updateUser = async (
     });
   }
 
-  const user = await userService.updateUser(id, req.body);
+  const user = await usersService.updateUser(id, req.body);
 
   if (!user) {
     return res.status(404).json({
@@ -70,7 +70,7 @@ export const deleteUser = async (
     });
   }
 
-  const result = await userService.deleteUser(id);
+  const result = await usersService.deleteUser(id);
 
   if (result.deletedCount === 0) {
     return res.status(404).json({

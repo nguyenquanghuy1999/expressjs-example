@@ -1,72 +1,82 @@
 import type { Request, Response } from "express";
+import { ObjectId } from "mongodb";
+import * as productsService from "../services/products.service.ts";
 
-type Product = {
-  id: number;
-  name: string;
-  price: number;
-};
-
-const products: Product[] = [
-  {
-    id: 1,
-    name: "item 1 da update",
-    price: 3123123,
-  },
-];
-
-export const getProducts = (req: Request, res: Response) => {
-  res.json(products);
-};
-
-export const getProductsById = (req: Request, res: Response) => {
-  const id = req.params.id;
-
-  const product = products.find((u) => u.id === Number(id));
-  if (!product) {
-    res.status(404).json({ message: "product not found" });
-  }
+export const getProducts = async (req: Request, res: Response) => {
+  const product = await productsService.getProducts();
   res.json(product);
 };
 
-export const createProduct = (req: Request, res: Response) => {
-  const { id, ...rest } = req.body;
+export const getProductById = async (
+  req: Request<{ id: string }>,
+  res: Response,
+) => {
+  const { id } = req.params;
 
-  const newproduct = {
-    id: products.length + 1,
-    ...rest,
-  };
-
-  products.push(newproduct);
-  res.status(201).json(newproduct);
-};
-
-export const updateProduct = (req: Request, res: Response) => {
-  const id = req.params.id;
-
-  const index = products.findIndex((u) => u.id === Number(id));
-
-  if (index === -1) {
-    res.status(404).json({ message: "product not found" });
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({
+      message: "Invalid product id",
+    });
   }
 
-  products[index] = {
-    id: Number(id),
-    name: req.body.name,
-    price: req.body.price,
-  };
+  const product = await productsService.getProductById(id);
 
-  res.json(products[index]);
-};
-
-export const delelteProduct = (req: Request, res: Response) => {
-  const id = req.params.id;
-
-  const index = products.findIndex((u) => u.id === Number(id));
-
-  if (index === -1) {
-    res.status(404).json({ message: "product not found" });
+  if (!product) {
+    return res.status(404).json({
+      message: "Product not found",
+    });
   }
 
-  products.splice(index, 1);
+  res.json(product);
+};
+
+export const createProduct = async (req: Request, res: Response) => {
+  const product = await productsService.createProduct(req.body);
+  res.status(201).json(product);
+};
+
+export const updateProduct = async (
+  req: Request<{ id: string }>,
+  res: Response,
+) => {
+  const { id } = req.params;
+
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({
+      message: "Invalid product id",
+    });
+  }
+
+  const product = await productsService.updateProduct(id, req.body);
+
+  if (!product) {
+    return res.status(404).json({
+      message: "Product not found",
+    });
+  }
+
+  res.json(product);
+};
+
+export const deleteProduct = async (
+  req: Request<{ id: string }>,
+  res: Response,
+) => {
+  const { id } = req.params;
+
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({
+      message: "Invalid product id",
+    });
+  }
+
+  const result = await productsService.deleteProduct(id);
+
+  if (result.deletedCount === 0) {
+    return res.status(404).json({
+      message: "Product not found",
+    });
+  }
+
   res.status(204).send();
 };

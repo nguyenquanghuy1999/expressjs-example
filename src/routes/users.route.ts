@@ -2,7 +2,7 @@ import { Router } from "express";
 import {
   getUsers,
   createUser,
-  getUsersById,
+  getUserById,
   updateUser,
   deleteUser,
 } from "../controllers/users.controller.ts";
@@ -10,7 +10,7 @@ import {
 const usersRouter = Router();
 
 usersRouter.get("/", getUsers);
-usersRouter.get("/:id", getUsersById);
+usersRouter.get("/:id", getUserById);
 usersRouter.post("/", createUser);
 usersRouter.put("/:id", updateUser);
 usersRouter.delete("/:id", deleteUser);
