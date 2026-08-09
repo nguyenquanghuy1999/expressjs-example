@@ -70,7 +70,7 @@ export const deleteUser = async (
     });
   }
 
-  const result = await usersService.deleteUser(id || req.body.id);
+  const result = await usersService.deleteUser(id);
 
   if (result.deletedCount === 0) {
     return res.status(404).json({
