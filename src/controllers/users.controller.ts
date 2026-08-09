@@ -31,8 +31,6 @@ export const getUserById = async (
 };
 
 export const createUser = async (req: Request, res: Response) => {
-  console.log("info user:", req.body);
-
   const user = await usersService.createUser(req.body);
   res.status(201).json(user);
 };
