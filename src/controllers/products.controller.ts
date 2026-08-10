@@ -31,6 +31,8 @@ export const getProductById = async (
 };
 
 export const createProduct = async (req: Request, res: Response) => {
+  console.log("info product: ", req.body);
+
   const product = await productsService.createProduct(req.body);
   res.status(201).json(product);
 };
